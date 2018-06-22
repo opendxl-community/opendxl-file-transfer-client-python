@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import os
+# pylint: disable=no-name-in-module, import-error
 import subprocess
 from distutils.dir_util import copy_tree, remove_tree
 from distutils.file_util import copy_file, move_file
@@ -9,7 +10,7 @@ from distutils.archive_util import make_archive
 
 
 # Run clean
-import clean
+import clean # pylint: disable=unused-import
 
 print("Starting dist.\n")
 
@@ -48,7 +49,8 @@ copy_file(os.path.join(DIST_PY_FILE_LOCATION, "doc", "docutils.conf"),
 copy_tree(os.path.join(DIST_PY_FILE_LOCATION, "doc", "sdk"), DIST_DOCTMP_DIR)
 
 print("\nCalling sphinx-build\n")
-subprocess.check_call(["sphinx-build", "-b", "html", DIST_DOCTMP_DIR, os.path.join(DIST_DIRECTORY, "doc")])
+subprocess.check_call(["sphinx-build", "-b", "html", DIST_DOCTMP_DIR,
+                       os.path.join(DIST_DIRECTORY, "doc")])
 
 # Delete .doctrees
 remove_tree(os.path.join(os.path.join(DIST_DIRECTORY, "doc"), ".doctrees"), verbose=1)
