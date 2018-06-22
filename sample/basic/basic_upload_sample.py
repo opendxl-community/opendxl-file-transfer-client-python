@@ -1,6 +1,8 @@
 from __future__ import absolute_import
+from __future__ import print_function
 import os
 import sys
+import time
 
 from dxlbootstrap.util import MessageUtils
 from dxlclient.client_config import DxlClientConfig
@@ -22,6 +24,9 @@ logger = logging.getLogger(__name__)
 # Create DXL configuration from file
 config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
 
+UPLOAD_FILE = __file__
+MAX_SEGMENT_SIZE = 500
+
 # Create the client
 with DxlClient(config) as dxl_client:
 
@@ -33,9 +38,15 @@ with DxlClient(config) as dxl_client:
     # Create client wrapper
     client = FileTransferClient(dxl_client)
 
+    start = time.time()
+
     # Invoke the example method
-    resp_dict = client.my_example_method()
+    resp_dict = client.upload_file(UPLOAD_FILE,
+                                   os.path.basename(UPLOAD_FILE),
+                                   MAX_SEGMENT_SIZE)
 
     # Print out the response (convert dictionary to JSON for pretty printing)
-    print("Response:\n{0}".format(
+    print("Response:\n{}".format(
         MessageUtils.dict_to_json(resp_dict, pretty_print=True)))
+
+    print("Elapsed time (ms): {}".format((time.time() - start) * 1000))
