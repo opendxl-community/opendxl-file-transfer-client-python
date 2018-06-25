@@ -41,9 +41,9 @@ with DxlClient(config) as dxl_client:
     start = time.time()
 
     # Invoke the example method
-    resp_dict = client.upload_file(UPLOAD_FILE,
-                                   os.path.basename(UPLOAD_FILE),
-                                   MAX_SEGMENT_SIZE)
+    resp_dict = client.store_file(UPLOAD_FILE,
+                                  os.path.basename(UPLOAD_FILE),
+                                  MAX_SEGMENT_SIZE)
 
     # Print out the response (convert dictionary to JSON for pretty printing)
     print("Response:\n{}".format(
