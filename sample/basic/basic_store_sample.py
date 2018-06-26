@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 import os
 import sys
@@ -7,12 +8,11 @@ import time
 from dxlbootstrap.util import MessageUtils
 from dxlclient.client_config import DxlClientConfig
 from dxlclient.client import DxlClient
+from dxlfiletransferclient import FileTransferClient, FileStoreProp
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(root_dir + "/../..")
 sys.path.append(root_dir + "/..")
-
-from dxlfiletransferclient.client import FileTransferClient
 
 # Import common logging and configuration
 from common import *
@@ -24,8 +24,17 @@ logger = logging.getLogger(__name__)
 # Create DXL configuration from file
 config = DxlClientConfig.create_dxl_config_from_file(CONFIG_FILE)
 
-UPLOAD_FILE = __file__
-MAX_SEGMENT_SIZE = 500
+# Extract the name of the file to upload from a command line argument
+STORE_FILE_NAME = None
+if len(sys.argv) == 2:
+    STORE_FILE_NAME = sys.argv[1]
+else:
+    print("Name of file to store must be specified as an argument")
+    exit(1)
+
+# Send the file contents in 500 KB segments. The default maximum size
+# for a DXL broker message is 1 MB.
+MAX_SEGMENT_SIZE = 500 * (2 ** 10)
 
 # Create the client
 with DxlClient(config) as dxl_client:
@@ -40,13 +49,24 @@ with DxlClient(config) as dxl_client:
 
     start = time.time()
 
-    # Invoke the example method
-    resp_dict = client.store_file(UPLOAD_FILE,
-                                  os.path.basename(UPLOAD_FILE),
-                                  MAX_SEGMENT_SIZE)
+    # As the response is received from the service for each file segment
+    # which is transmitted, update a percentage complete counter to show
+    # progress
+    def update_progress(segment_response):
+        total_segments = segment_response[FileStoreProp.TOTAL_SEGMENTS]
+        segment_number = segment_response[FileStoreProp.SEGMENTS_RECEIVED]
+        sys.stdout.write("\rPercent complete: {}".format(
+            int((segment_number / total_segments) * 100)
+            if total_segments else 100))
+        sys.stdout.flush()
+
+    # Invoke the store file method to store the file on the server
+    resp_dict = client.store_file(STORE_FILE_NAME,
+                                  max_segment_size=MAX_SEGMENT_SIZE,
+                                  callback=update_progress)
 
     # Print out the response (convert dictionary to JSON for pretty printing)
-    print("Response:\n{}".format(
+    print("\nResponse:\n{}".format(
         MessageUtils.dict_to_json(resp_dict, pretty_print=True)))
 
     print("Elapsed time (ms): {}".format((time.time() - start) * 1000))
