@@ -32,9 +32,21 @@ else:
     print("Name of file to store must be specified as an argument")
     exit(1)
 
-# Send the file contents in 500 KB segments. The default maximum size
+# Send the file contents in 50 KB segments. The default maximum size
 # for a DXL broker message is 1 MB.
-MAX_SEGMENT_SIZE = 500 * (2 ** 10)
+MAX_SEGMENT_SIZE = 50 * (2 ** 10)
+
+
+# As the response is received from the service for each file segment
+# which is transmitted, update a percentage complete counter to show
+# progress
+def update_progress(segment_response):
+    total_segments = segment_response[FileStoreProp.TOTAL_SEGMENTS]
+    segment_number = segment_response[FileStoreProp.SEGMENTS_RECEIVED]
+    sys.stdout.write("\rPercent complete: {}%".format(
+        int((segment_number / total_segments) * 100)
+        if total_segments else 100))
+    sys.stdout.flush()
 
 # Create the client
 with DxlClient(config) as dxl_client:
@@ -48,17 +60,6 @@ with DxlClient(config) as dxl_client:
     client = FileTransferClient(dxl_client)
 
     start = time.time()
-
-    # As the response is received from the service for each file segment
-    # which is transmitted, update a percentage complete counter to show
-    # progress
-    def update_progress(segment_response):
-        total_segments = segment_response[FileStoreProp.TOTAL_SEGMENTS]
-        segment_number = segment_response[FileStoreProp.SEGMENTS_RECEIVED]
-        sys.stdout.write("\rPercent complete: {}".format(
-            int((segment_number / total_segments) * 100)
-            if total_segments else 100))
-        sys.stdout.flush()
 
     # Invoke the store file method to store the file on the server
     resp_dict = client.store_file(STORE_FILE_NAME,
