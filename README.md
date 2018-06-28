@@ -28,6 +28,20 @@ See the
 [File Transfer DXL Python client documentation](https://opendxl-community.github.io/opendxl-file-transfer-client-python/pydoc)
 for installation instructions, API documentation, and usage examples.
 
+## Roadmap
+
+The current implementation only supports uploading individual files to a
+DXL service via DXL
+[request](https://opendxl.github.io/opendxl-client-python/pydoc/dxlclient.message.html#dxlclient.message.Request) messages. In the future, we're hoping to add the following:
+
+* Retrieving previously uploaded files from a service.
+* Querying a service for a list of currently stored files.
+* Sending a file to the DXL fabric via DXL
+  [event](https://opendxl.github.io/opendxl-client-python/pydoc/dxlclient.message.html#dxlclient.message.Event)
+  messages. This would allow for multiple event subscribers to receive the same
+  file.
+* I/O performance optimizations
+
 ## Installation
 
 To start using the File Transfer DXL Python client library:
