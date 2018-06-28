@@ -19,8 +19,9 @@ class FileTransferClient(Client):
     #: The DXL service type for the File Transfer API.
     _SERVICE_TYPE = "/opendxl-file-transfer/service/file-transfer"
 
-    #: The DXL topic fragment for the File Transfer "file store" method.
-    _REQ_TOPIC_FILE_STORE = "file/store"
+    #: The default topic on the DXL fabric to use for the File Transfer
+    #: file store operations.
+    _DEFAULT_FILE_TRANSFER_STORE_TOPIC = "{}/file/store".format(_SERVICE_TYPE)
 
     _PARAM_FILE_HASH_SHA256 = "hash_sha256"
     _PARAM_FILE_NAME = "name"
@@ -32,18 +33,19 @@ class FileTransferClient(Client):
 
     _DEFAULT_MAX_SEGMENT_SIZE = 1 * (2 ** 10)
 
-    def __init__(self, dxl_client, file_transfer_service_unique_id=None):
+    def __init__(self, dxl_client,
+                 file_transfer_store_topic=_DEFAULT_FILE_TRANSFER_STORE_TOPIC):
         """
         Constructor parameters:
 
         :param dxlclient.client.DxlClient dxl_client: The DXL client to use for
             communication with the fabric.
-        :param str file_transfer_service_unique_id: Unique id to use as part
+        :param str file_transfer_store_topic: Unique id to use as part
             of the request topic names for the File Transfer DXL service.
         """
         super(FileTransferClient, self).__init__(dxl_client)
         self._dxl_client = dxl_client
-        self._file_transfer_service_unique_id = file_transfer_service_unique_id
+        self._file_transfer_store_topic = file_transfer_store_topic
 
     def store_file(self, file_name_to_send, file_name_on_server=None,
                    max_segment_size=_DEFAULT_MAX_SEGMENT_SIZE,
@@ -117,7 +119,7 @@ class FileTransferClient(Client):
                     file_id)
 
                 segment_response = self._invoke_service(
-                    self._REQ_TOPIC_FILE_STORE,
+                    self._file_transfer_store_topic,
                     segment,
                     other_fields)
 
@@ -152,7 +154,7 @@ class FileTransferClient(Client):
                     "Error occurred, canceling store for file '%s', id '%s'",
                     file_name_on_server, file_id)
                 self._invoke_service(
-                    self._REQ_TOPIC_FILE_STORE,
+                    self._file_transfer_store_topic,
                     "",
                     {
                         FileStoreProp.ID: file_id,
@@ -169,28 +171,18 @@ class FileTransferClient(Client):
             }
         }
 
-    def _invoke_service(self, method, payload, other_fields=None):
+    def _invoke_service(self, topic, payload, other_fields=None):
         """
         Invokes a request method on the File Transfer DXL service.
 
-        :param str method: The request method to append to the
-            topic for the request.
-        :param payload:
-        :param other_fields:
+        :param str topic: The topic to send the request to.
+        :param payload: The payload to include in the request
+        :param dict other_fields: Other fields to include in the request
         :return: Results of the service invocation.
         :rtype: dict
         """
-        if self._file_transfer_service_unique_id:
-            request_service_id = "/{}".format(
-                self._file_transfer_service_unique_id)
-        else:
-            request_service_id = ""
-
         # Create the DXL request message.
-        request = Request("{}{}/{}".format(
-            self._SERVICE_TYPE,
-            request_service_id,
-            method))
+        request = Request(topic)
 
         # Set the payload on the request message.
         request.payload = payload
