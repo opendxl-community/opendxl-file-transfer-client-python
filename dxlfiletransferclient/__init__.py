@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ._version import __version__
-from .client import FileTransferClient
+from .client import FileSendResult, FileSendSegmentResult, FileTransferClient
 from .constants import *
 from .store import FileStoreManager, FileStoreSegmentResult
 

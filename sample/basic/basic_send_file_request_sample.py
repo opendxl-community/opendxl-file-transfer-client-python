@@ -8,7 +8,7 @@ import time
 from dxlbootstrap.util import MessageUtils
 from dxlclient.client_config import DxlClientConfig
 from dxlclient.client import DxlClient
-from dxlfiletransferclient import FileTransferClient, FileStoreProp
+from dxlfiletransferclient import FileTransferClient
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(root_dir + "/../..")
@@ -41,8 +41,8 @@ MAX_SEGMENT_SIZE = 50 * (2 ** 10)
 # which is transmitted, update a percentage complete counter to show
 # progress
 def update_progress(segment_response):
-    total_segments = segment_response[FileStoreProp.TOTAL_SEGMENTS]
-    segment_number = segment_response[FileStoreProp.SEGMENTS_RECEIVED]
+    total_segments = segment_response.total_segments
+    segment_number = segment_response.segments_received
     sys.stdout.write("\rPercent complete: {}%".format(
         int((segment_number / total_segments) * 100)
         if total_segments else 100))
@@ -61,13 +61,13 @@ with DxlClient(config) as dxl_client:
 
     start = time.time()
 
-    # Invoke the store file method to store the file on the server
-    resp_dict = client.store_file(STORE_FILE_NAME,
-                                  max_segment_size=MAX_SEGMENT_SIZE,
-                                  callback=update_progress)
+    # Invoke the send file request method to store the file on the server
+    resp = client.send_file_request(
+        STORE_FILE_NAME, max_segment_size=MAX_SEGMENT_SIZE,
+        callback=update_progress)
 
     # Print out the response (convert dictionary to JSON for pretty printing)
     print("\nResponse:\n{}".format(
-        MessageUtils.dict_to_json(resp_dict, pretty_print=True)))
+        MessageUtils.dict_to_json(resp.to_dict(), pretty_print=True)))
 
     print("Elapsed time (ms): {}".format((time.time() - start) * 1000))

@@ -136,7 +136,8 @@ disable=print-statement,
         too-many-public-methods,
         missing-docstring,
         protected-access,
-        too-many-lines
+        too-many-lines,
+        similarities
 
 
 # Enable the message, report, category or checker with the given id(s). You can

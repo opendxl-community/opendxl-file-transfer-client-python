@@ -86,8 +86,10 @@ class FileStoreSegmentResult(object):
             FileStoreProp.ID: self._file_id,
             FileStoreProp.SEGMENTS_RECEIVED: self._segments_received
         }
+
         if self._file_result:
             dict_value[FileStoreProp.RESULT] = self._file_result
+
         return dict_value
 
 
