@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from ._version import __version__
 from .client import FileTransferClient
 from .constants import *
+from .store import FileStoreManager, FileStoreSegmentResult
 
 
 def get_version():

@@ -5,7 +5,7 @@ import os
 from dxlclient.message import Request
 from dxlbootstrap.util import MessageUtils
 from dxlbootstrap.client import Client
-from .constants import FileStoreProp, HashType
+from .constants import FileStoreProp, FileStoreResultProp, HashType
 
 # Configure local logger
 logger = logging.getLogger(__name__)
@@ -22,14 +22,6 @@ class FileTransferClient(Client):
     #: The default topic on the DXL fabric to use for the File Transfer
     #: file store operations.
     _DEFAULT_FILE_TRANSFER_STORE_TOPIC = "{}/file/store".format(_SERVICE_TYPE)
-
-    _PARAM_FILE_HASH_SHA256 = "hash_sha256"
-    _PARAM_FILE_NAME = "name"
-    _PARAM_FILE_SEGMENT_NUMBER = "segment_number"
-
-    _PARAM_FILE_RESULT = "result"
-    _PARAM_FILE_RESULT_CANCEL = "cancel"
-    _PARAM_FILE_RESULT_STORE = "store"
 
     _DEFAULT_MAX_SEGMENT_SIZE = 1 * (2 ** 10)
 
@@ -68,11 +60,36 @@ class FileTransferClient(Client):
                 callback
             )
 
-    def store_file_from_stream(self, stream, file_name_on_server,
-                               stream_size=None,
-                               max_segment_size=_DEFAULT_MAX_SEGMENT_SIZE,
-                               total_segments=None,
-                               callback=None):
+    @staticmethod
+    def _create_request_other_fields(
+            file_name_on_server, segment_number, file_id, segment, bytes_read,
+            stream_size, total_segments, file_hash_sha256):
+
+        other_fields = {
+            FileStoreProp.NAME: file_name_on_server,
+            FileStoreProp.SEGMENT_NUMBER: str(segment_number)
+        }
+
+        if file_id:
+            other_fields[FileStoreProp.ID] = file_id
+
+        if (bytes_read == stream_size) or \
+                (segment_number == total_segments) or \
+                not segment:
+            other_fields[FileStoreProp.RESULT] = \
+                FileStoreResultProp.STORE
+            other_fields[FileStoreProp.SIZE] = str(bytes_read)
+            other_fields[FileStoreProp.HASH_SHA256] = \
+                file_hash_sha256.hexdigest()
+
+        return other_fields
+
+    def store_file_from_stream( # pylint: disable=too-many-locals
+            self, stream, file_name_on_server,
+            stream_size=None,
+            max_segment_size=_DEFAULT_MAX_SEGMENT_SIZE,
+            total_segments=None,
+            callback=None):
         file_hash_sha256 = hashlib.sha256()
 
         segment_number = 0
@@ -86,29 +103,20 @@ class FileTransferClient(Client):
                 segment_number += 1
                 segment = stream.read(max_segment_size)
 
-                other_fields = {
-                    self._PARAM_FILE_NAME: file_name_on_server,
-                    self._PARAM_FILE_SEGMENT_NUMBER: str(segment_number)
-                }
-
-                if file_id:
-                    other_fields[FileStoreProp.ID] = file_id
-
                 if segment:
                     bytes_read += len(segment)
                     try:
                         file_hash_sha256.update(segment)
                     except TypeError:
                         file_hash_sha256.update(segment.encode())
-                if (bytes_read == stream_size) or \
-                        (segment_number == total_segments) or \
-                        not segment:
-                    continue_reading = False
-                    other_fields[self._PARAM_FILE_RESULT] = \
-                        self._PARAM_FILE_RESULT_STORE
-                    other_fields[FileStoreProp.SIZE] = str(bytes_read)
-                    other_fields[self._PARAM_FILE_HASH_SHA256] = \
-                        file_hash_sha256.hexdigest()
+
+                other_fields = self._create_request_other_fields(
+                    file_name_on_server, segment_number, file_id,
+                    segment, bytes_read, stream_size, total_segments,
+                    file_hash_sha256
+                )
+
+                continue_reading = FileStoreProp.RESULT not in other_fields
 
                 logger.debug(
                     "Sending segment '%d' %sfor file '%s', id '%s'",
@@ -158,8 +166,8 @@ class FileTransferClient(Client):
                     "",
                     {
                         FileStoreProp.ID: file_id,
-                        self._PARAM_FILE_NAME: file_name_on_server,
-                        self._PARAM_FILE_RESULT: self._PARAM_FILE_RESULT_CANCEL
+                        FileStoreProp.NAME: file_name_on_server,
+                        FileStoreProp.RESULT: FileStoreResultProp.CANCEL
                     }
                 )
 
