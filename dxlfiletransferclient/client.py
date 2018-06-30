@@ -188,10 +188,16 @@ class FileTransferClient(Client):
 
         :param str file_name_to_send: Path to the locally accessible file
             which should be sent.
-        :param str file_name_on_server: Base name (file name without a leading
-            path) that the file should be stored as on the server. If no value
-            is set for this parameter, the base name of the file specified in
-            the `file_name_to_send` parameter is used.
+        :param str file_name_on_server: Name that the file should be stored as
+            on the server. The name may contain subdirectories if it is desired
+            to store the file in a subdirectory under the base storage
+            directory on the server, for example, `/localsubdir/stored.txt`.
+            If no value is set for this parameter, the base name of the file
+            specified in the `file_name_to_send` parameter is used. For
+            example, if `file_name_on_server` were not specified but
+            `file_name_to_send` were specified as `/root/localfile.txt`, the
+            file stored at the server would be under the root storage
+            directory, with a name of `localfile.txt`.
         :param int max_segment_size: Maximum size (in bytes) for each file
             segment transferred through the DXL fabric.
         :param function callback: Optional function called back upon with
@@ -226,8 +232,10 @@ class FileTransferClient(Client):
         Populate the value used for the `other_fields` field in a file store
         request.
 
-        :param str file_name_on_server: Base name (file name without a leading
-            path) that the file should be stored as on the server.
+        :param str file_name_on_server: Name that the file should be stored as
+            on the server. The name may contain subdirectories if it is desired
+            to store the file in a subdirectory under the base storage
+            directory on the server, for example, `/localsubdir/stored.txt`.
         :param int segment_number: Number of the next file segment to send.
         :param str file_id: Id of the file.
         :param bytes segment: The contents of the next segment to be sent.
@@ -243,7 +251,6 @@ class FileTransferClient(Client):
         :rtype: dict
         """
         other_fields = {
-            FileStoreProp.NAME: file_name_on_server,
             FileStoreProp.SEGMENT_NUMBER: str(segment_number)
         }
 
@@ -262,6 +269,7 @@ class FileTransferClient(Client):
                 not segment:
             other_fields[FileStoreProp.RESULT] = \
                 FileStoreResultProp.STORE
+            other_fields[FileStoreProp.NAME] = file_name_on_server
             other_fields[FileStoreProp.SIZE] = str(bytes_read)
             other_fields[FileStoreProp.HASH_SHA256] = \
                 file_hash_sha256.hexdigest()
@@ -308,8 +316,10 @@ class FileTransferClient(Client):
 
         :param stream: The IO stream from which to read bytes for the send
             request.
-        :param str file_name_on_server: Base name (file name without a leading
-            path) that the file should be stored as on the server.
+        :param str file_name_on_server: Name that the file should be stored as
+            on the server. The name may contain subdirectories if it is desired
+            to store the file in a subdirectory under the base storage
+            directory on the server, for example, `/localsubdir/stored.txt`.
         :param int stream_size: Total size of the local stream (`None` if not
             known).
         :param int max_segment_size: Maximum size (in bytes) for each file
