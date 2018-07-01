@@ -34,7 +34,8 @@ def _contains_path_name_separators(value):
 
 def _get_value_as_int(dict_obj, key):
     """
-    Return the value associated with a key in a dictionary, converted to an int.
+    Return the value associated with a key in a dictionary, converted to an
+    int.
 
     :param dict dict_obj: Dictionary to retrieve the value from
     :param str key: Key associated with the value to return
@@ -119,30 +120,32 @@ class FileStoreManager(object):
     Class which writes file segments into a backing file store.
     """
 
-    #: "Working" subdirectory under the primary storage directory which can
-    #: contain temporary files related to file storage operations.
-    _STORAGE_WORK_SUBDIR = ".workdir"
+    #: Default location within the storage directory to place the working
+    #: directory
+    _DEFAULT_WORKING_SUBDIR = ".workdir"
 
-    #: Subdirectory under the primary storage directory where files are stored
-    _STORAGE_FILES_SUBDIR = "files"
-
-    #: Base file name for temporary files written in a work subdirectory
-    _STORAGE_WORK_BASE_FILE_NAME = "file"
+    #: Base file name for temporary files written in a file's working directory
+    _WORKING_BASE_FILE_NAME = "file"
 
     #: Key name for tracking a file hash (SHA-256 only for now)
     _FILE_HASHER = "file_hasher"
 
-    #: Key name containing the name of the work directory under which a file is
+    #: Key name containing the name of the working directory under which a file
     #: stored.
-    _FILE_WORK_DIR = "work_dir"
+    _FILE_WORKING_DIR = "work_dir"
 
-    def __init__(self, storage_dir):
+    def __init__(self, storage_dir, working_dir):
         """
         Constructor parameters:
 
         :param str storage_dir: Directory under which files are stored. If
             the directory does not already exist, an attempt will be made
             to create it.
+        :param str working_dir: Working directory under which files (or
+            segments of files) may be stored in the process of being
+            transferred to the `storage_dir`. If not specified, this defaults
+            to ".workdir" under the value specified for the `storage_dir`
+            parameter.
         :raises PermissionError: If the `storage_dir` does not exist and cannot
             be created due to insufficient permissions.
         """
@@ -151,18 +154,17 @@ class FileStoreManager(object):
         self._files_lock = threading.RLock()
 
         self._storage_dir = os.path.abspath(storage_dir)
+        if not os.path.exists(self._storage_dir):
+            os.makedirs(self._storage_dir)
+        logger.info("Using storage dir: %s", storage_dir)
 
-        self._storage_work_dir = os.path.join(self._storage_dir,
-                                              self._STORAGE_WORK_SUBDIR)
-        if not os.path.exists(self._storage_work_dir):
-            os.makedirs(self._storage_work_dir)
+        self._working_dir = os.path.abspath(working_dir) \
+            if working_dir else os.path.join(self._storage_dir,
+                                             self._DEFAULT_WORKING_SUBDIR)
+        if not os.path.exists(self._working_dir):
+            os.makedirs(self._working_dir)
+        logger.info("Using working dir: %s", self._working_dir)
 
-        self._storage_files_dir = os.path.join(self._storage_dir,
-                                               self._STORAGE_FILES_SUBDIR)
-        if not os.path.exists(self._storage_files_dir):
-            os.makedirs(self._storage_files_dir)
-
-        logger.info("Using file store at '%s'", storage_dir)
         self._purge_incomplete_files()
 
     def _get_working_file_dir(self, file_id):
@@ -173,7 +175,7 @@ class FileStoreManager(object):
         :return: The working file directory.
         :rtype: str
         """
-        return os.path.join(self._storage_work_dir, file_id)
+        return os.path.join(self._working_dir, file_id)
 
     def _get_working_file_name(self, file_id):
         """
@@ -184,14 +186,14 @@ class FileStoreManager(object):
         :rtype: str
         """
         return os.path.join(self._get_working_file_dir(file_id),
-                            self._STORAGE_WORK_BASE_FILE_NAME)
+                            self._WORKING_BASE_FILE_NAME)
 
     def _purge_incomplete_files(self):
         """
         Purge working files for file storage operations which did not complete
         successfully.
         """
-        for incomplete_file_id in os.listdir(self._storage_work_dir):
+        for incomplete_file_id in os.listdir(self._working_dir):
             logger.info("Purging content for incomplete file id: '%s'",
                         incomplete_file_id)
             file_work_dir = self._get_working_file_dir(incomplete_file_id)
@@ -269,23 +271,22 @@ class FileStoreManager(object):
                             file_id
                         )
                     )
-                file_work_dir = self._get_working_file_dir(file_id)
-                if os.path.exists(file_work_dir):
+                file_working_dir = self._get_working_file_dir(file_id)
+                if os.path.exists(file_working_dir):
                     raise ValueError(
-                        "Work directory for new file id '{}' already exists".format(
-                            file_id
-                        )
+                        "Work directory for new file id '{}' already exists".
+                        format(file_id)
                     )
-                os.makedirs(file_work_dir)
+                os.makedirs(file_working_dir)
                 file_entry = {
                     FileStoreProp.ID: file_id,
                     FileStoreProp.SEGMENTS_RECEIVED: 0,
                     self._FILE_HASHER: hashlib.sha256(),
-                    self._FILE_WORK_DIR: file_work_dir,
+                    self._FILE_WORKING_DIR: file_working_dir,
                 }
                 self._files[file_id] = file_entry
                 logger.info("Assigning file id '%s' for '%s'", file_id,
-                            file_entry[self._FILE_WORK_DIR])
+                            file_entry[self._FILE_WORKING_DIR])
         return file_entry
 
     def _validate_file(self, file_entry, file_size, file_hash):
@@ -294,14 +295,14 @@ class FileStoreManager(object):
 
         :param dict file_entry: The entry of the file to complete.
         :param int file_size: Expected size of the stored file.
-        :param str file_hash: Expected SHA-256 hexstring hash of the contents of
-            the stored file
+        :param str file_hash: Expected SHA-256 hexstring hash of the contents
+            of the stored file
         """
         file_id = file_entry[FileStoreProp.ID]
-        file_work_name = self._get_working_file_name(file_id)
+        file_working_name = self._get_working_file_name(file_id)
 
         store_error = None
-        stored_file_size = os.path.getsize(file_work_name)
+        stored_file_size = os.path.getsize(file_working_name)
         if stored_file_size != file_size:
             store_error = "Unexpected file size. Expected: '" + \
                           str(stored_file_size) + "'. Received: '" + \
@@ -328,8 +329,8 @@ class FileStoreManager(object):
         :param str requested_file_result: The desired storage result. If the
             value is
             :const:`dxlfiletransferclient.constants.FileStoreResultProp.STORE`
-            but the expected size/hash does not match the stored size/hash or if
-            the value is
+            but the expected size/hash does not match the stored size/hash or
+            if the value is
             :const:`dxlfiletransferclient.constants.FileStoreResultProp.CANCEL`,
              the stored file contents are removed from disk.
         :param bytes last_segment: The last segment of the file to be stored.
@@ -339,16 +340,16 @@ class FileStoreManager(object):
         :param str file_name: File name under the storage file directory
             in which to store the file.
         :param int file_size: Expected size of the stored file.
-        :param str file_hash: Expected SHA-256 hexstring hash of the contents of
-            the stored file
+        :param str file_hash: Expected SHA-256 hexstring hash of the contents
+            of the stored file
         :return: The value of the requested_file_result.
         :raises ValueError: If the stored size/hash does not match the
             expected size/hash for the file.
         :rtype: str
         """
         file_id = file_entry[FileStoreProp.ID]
-        file_work_dir = self._get_working_file_dir(file_id)
-        file_work_name = self._get_working_file_name(file_id)
+        file_working_dir = self._get_working_file_dir(file_id)
+        file_working_name = self._get_working_file_name(file_id)
 
         try:
             if requested_file_result == FileStoreResultProp.STORE:
@@ -360,7 +361,7 @@ class FileStoreManager(object):
                     os.makedirs(file_dir)
                 elif os.path.exists(file_name):
                     os.remove(file_name)
-                os.rename(file_work_name, file_name)
+                os.rename(file_working_name, file_name)
 
                 logger.info("Stored file '%s' for id '%s'", file_name, file_id)
                 result = FileStoreResultProp.STORE
@@ -368,7 +369,7 @@ class FileStoreManager(object):
                 logger.info("Canceled storage of file for id '%s'", file_id)
                 result = FileStoreResultProp.CANCEL
         finally:
-            shutil.rmtree(file_work_dir)
+            shutil.rmtree(file_working_dir)
             with self._files_lock:
                 del self._files[file_id]
 
@@ -394,7 +395,8 @@ class FileStoreManager(object):
         params = message.other_fields
         segment = message.payload
 
-        segment_number = _get_value_as_int(params, FileStoreProp.SEGMENT_NUMBER)
+        segment_number = _get_value_as_int(params,
+                                           FileStoreProp.SEGMENT_NUMBER)
 
         file_id = params.get(FileStoreProp.ID)
         if _contains_path_name_separators(file_id):
@@ -405,11 +407,16 @@ class FileStoreManager(object):
         file_name = params.get(FileStoreProp.NAME)
         if file_name:
             abs_file_name = os.path.abspath(os.path.join(
-                self._storage_files_dir, file_name))
-            if not abs_file_name.startswith(self._storage_files_dir + os.sep):
+                self._storage_dir, file_name))
+            if not abs_file_name.startswith(self._storage_dir + os.sep):
                 raise ValueError(
-                    "File name cannot be outside of storage directory: '{}'".format(
+                    "File name cannot be outside of storage directory: '{}'".
+                    format(file_name))
+            if abs_file_name.startswith(self._working_dir + os.sep):
+                raise ValueError(
+                    "File name cannot be in working directory: '{}'".format(
                         file_name))
+
             file_name = abs_file_name
 
         file_size = _get_value_as_int(params, FileStoreProp.SIZE)
