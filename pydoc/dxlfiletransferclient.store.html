@@ -1,0 +1,222 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dxlfiletransferclient.store module &#8212; File Transfer DXL Python client 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="dxlfiletransferclient.constants module" href="dxlfiletransferclient.constants.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dxlfiletransferclient.constants.html" title="dxlfiletransferclient.constants module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">File Transfer DXL Python client 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="dxlfiletransferclient.html" accesskey="U">dxlfiletransferclient package</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dxlfiletransferclient.store">
+<span id="dxlfiletransferclient-store-module"></span><h1>dxlfiletransferclient.store module<a class="headerlink" href="#module-dxlfiletransferclient.store" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="dxlfiletransferclient.store.FileStoreManager">
+<em class="property">class </em><code class="descclassname">dxlfiletransferclient.store.</code><code class="descname">FileStoreManager</code><span class="sig-paren">(</span><em>storage_dir</em>, <em>working_dir</em><span class="sig-paren">)</span><a class="headerlink" href="#dxlfiletransferclient.store.FileStoreManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class which writes file segments into a backing file store.</p>
+<p>Constructor parameters:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>storage_dir</strong> (<em>str</em>) -- Directory under which files are stored. If
+the directory does not already exist, an attempt will be made
+to create it.</li>
+<li><strong>working_dir</strong> (<em>str</em>) -- Working directory under which files (or
+segments of files) may be stored in the process of being
+transferred to the <cite>storage_dir</cite>. If not specified, this defaults
+to &quot;.workdir&quot; under the value specified for the <cite>storage_dir</cite>
+parameter.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>PermissionError</strong> -- If the <cite>storage_dir</cite> does not exist and cannot
+be created due to insufficient permissions.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="dxlfiletransferclient.store.FileStoreManager.store_segment">
+<code class="descname">store_segment</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#dxlfiletransferclient.store.FileStoreManager.store_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a message containing information for a file to store. If the
+request contains a file segment, the segment is written to disk.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<em>dxlclient.message.Message</em>) -- The message containing the
+file segment to process.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The result from the storage operation.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#dxlfiletransferclient.store.FileStoreSegmentResult" title="dxlfiletransferclient.store.FileStoreSegmentResult">FileStoreSegmentResult</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> -- If any parameters associated with the segment
+to store are invalid. For example: if the segment number for the
+message is greater than 1 but no file id is associated with the
+message.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dxlfiletransferclient.store.FileStoreSegmentResult">
+<em class="property">class </em><code class="descclassname">dxlfiletransferclient.store.</code><code class="descname">FileStoreSegmentResult</code><span class="sig-paren">(</span><em>file_id</em>, <em>segments_received</em>, <em>file_result=None</em><span class="sig-paren">)</span><a class="headerlink" href="#dxlfiletransferclient.store.FileStoreSegmentResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class which holds the result data from a file segment storage
+attempt.</p>
+<dl class="attribute">
+<dt id="dxlfiletransferclient.store.FileStoreSegmentResult.file_id">
+<code class="descname">file_id</code><a class="headerlink" href="#dxlfiletransferclient.store.FileStoreSegmentResult.file_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Id of the file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dxlfiletransferclient.store.FileStoreSegmentResult.file_result">
+<code class="descname">file_result</code><a class="headerlink" href="#dxlfiletransferclient.store.FileStoreSegmentResult.file_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Storage result for the entire file (not just the segment), a member of
+the <a class="reference internal" href="dxlfiletransferclient.constants.html#dxlfiletransferclient.constants.FileStoreResultProp" title="dxlfiletransferclient.constants.FileStoreResultProp"><code class="xref py py-class docutils literal notranslate"><span class="pre">dxlfiletransferclient.constants.FileStoreResultProp</span></code></a> class.
+If the stored segment was not the last one for the file, the return
+value would be
+<a class="reference internal" href="dxlfiletransferclient.constants.html#dxlfiletransferclient.constants.FileStoreResultProp.NONE" title="dxlfiletransferclient.constants.FileStoreResultProp.NONE"><code class="xref py py-const docutils literal notranslate"><span class="pre">dxlfiletransferclient.constants.FileStoreResultProp.NONE</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dxlfiletransferclient.store.FileStoreSegmentResult.segments_received">
+<code class="descname">segments_received</code><a class="headerlink" href="#dxlfiletransferclient.store.FileStoreSegmentResult.segments_received" title="Permalink to this definition">¶</a></dt>
+<dd><p>Segments received so far for the file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="dxlfiletransferclient.store.FileStoreSegmentResult.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dxlfiletransferclient.store.FileStoreSegmentResult.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary representation of the file segment results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dxlfiletransferclient.constants.html"
+                        title="previous chapter">dxlfiletransferclient.constants module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dxlfiletransferclient.store.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dxlfiletransferclient.constants.html" title="dxlfiletransferclient.constants module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">File Transfer DXL Python client 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="dxlfiletransferclient.html" >dxlfiletransferclient package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>

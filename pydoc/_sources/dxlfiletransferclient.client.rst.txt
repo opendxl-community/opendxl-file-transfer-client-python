@@ -1,0 +1,7 @@
+dxlfiletransferclient.client module
+===================================
+
+.. automodule:: dxlfiletransferclient.client
+    :members:
+    :undoc-members:
+    :show-inheritance:

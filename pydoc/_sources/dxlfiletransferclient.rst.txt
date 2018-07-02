@@ -1,0 +1,19 @@
+dxlfiletransferclient package
+=============================
+
+Submodules
+----------
+
+.. toctree::
+
+   dxlfiletransferclient.client
+   dxlfiletransferclient.constants
+   dxlfiletransferclient.store
+
+Module contents
+---------------
+
+.. automodule:: dxlfiletransferclient
+    :members:
+    :undoc-members:
+    :show-inheritance:
