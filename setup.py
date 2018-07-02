@@ -24,14 +24,17 @@ class LintCommand(Command):
     """
     description = 'run lint against project source files'
     user_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         self.announce("Running pylint for library source files and tests",
                       level=distutils.log.INFO)
-        subprocess.check_call(["pylint", "dxlfiletransferclient"] +
+        subprocess.check_call(["pylint", "dxlfiletransferclient", "tests"] +
                               glob.glob("*.py"))
         self.announce("Running pylint for samples", level=distutils.log.INFO)
         subprocess.check_call(["pylint"] + glob.glob("sample/*.py") +
@@ -46,14 +49,18 @@ class CiCommand(Command):
     """
     description = 'run CI steps (lint, test, etc.)'
     user_options = []
+
     def initialize_options(self):
         pass
+
     def finalize_options(self):
         pass
+
     def run(self):
         self.run_command("lint")
+        self.run_command("test")
 
-TEST_REQUIREMENTS = ["pylint"]
+TEST_REQUIREMENTS = ["mock", "nose", "pylint"]
 
 DEV_REQUIREMENTS = TEST_REQUIREMENTS + ["sphinx"]
 
@@ -76,6 +83,8 @@ setup(
         "dev": DEV_REQUIREMENTS,
         "test": TEST_REQUIREMENTS
     },
+
+    test_suite="nose.collector",
 
     # Python version requirements
     python_requires=">=2.7.9,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*",

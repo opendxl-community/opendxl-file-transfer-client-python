@@ -134,7 +134,7 @@ class FileStoreManager(object):
     #: stored.
     _FILE_WORKING_DIR = "work_dir"
 
-    def __init__(self, storage_dir, working_dir):
+    def __init__(self, storage_dir, working_dir=None):
         """
         Constructor parameters:
 
