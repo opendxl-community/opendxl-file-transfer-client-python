@@ -84,7 +84,7 @@ setup(
     author="Jeremy Barlow",
 
     # License
-    license="",
+    license="Apache License 2.0",
 
     # Keywords
     keywords=['opendxl', 'dxl', 'client', 'file', 'transfer'],
