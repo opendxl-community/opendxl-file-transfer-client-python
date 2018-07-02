@@ -10,7 +10,8 @@ Prerequisites
 * The OpenDXL Python Client prerequisites must be satisfied
    `<https://opendxl.github.io/opendxl-client-python/pydoc/installation.html>`_
 
-* Python 2.7.9 or higher in the Python 2.x series or 3.4 or higher in the Python 3.x series installed within a Windows or Linux environment.
+* Python 2.7.9 or higher in the Python 2.x series or 3.4 or higher in the Python
+  3.x series installed within a Windows or Linux environment.
 
 Installation
 ************
@@ -27,8 +28,9 @@ Or with:
 
         pip install dxlfiletransferclient-\ |version|\.zip
 
-As an alternative (without PIP), unpack the dxlfiletransferclient-\ |version|\.zip (located in the lib folder) and run the setup
-script:
+As an alternative (without PIP), unpack the
+dxlfiletransferclient-\ |version|\.zip (located in the lib folder) and run the
+setup script:
 
     .. parsed-literal::
 

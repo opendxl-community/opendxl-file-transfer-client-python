@@ -1,5 +1,5 @@
-File Transfer DXL Python client
-===============================
+File Transfer DXL Python Client Library
+=======================================
 
 Introduction
 ------------
@@ -23,19 +23,22 @@ Samples
 Configuration
 
 .. toctree::
-    :maxdepth: 1
+	:maxdepth: 1
 
-    sampleconfig
+	sampleconfig
 
 Basic
 
-    TODO: Provide samples documentation
+.. toctree::
+	:maxdepth: 1
+
+	basicsendfilerequestexample
 
 Python API
 ----------
 
 .. toctree::
-    :titlesonly:
+	:titlesonly:
 
-    dxlfiletransferclient
+	dxlfiletransferclient
 

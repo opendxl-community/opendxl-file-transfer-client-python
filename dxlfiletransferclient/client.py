@@ -191,7 +191,7 @@ class FileTransferClient(Client):
         :param str file_name_on_server: Name that the file should be stored as
             on the server. The name may contain subdirectories if it is desired
             to store the file in a subdirectory under the base storage
-            directory on the server, for example, `/localsubdir/stored.txt`.
+            directory on the server, for example, `localsubdir/stored.txt`.
             If no value is set for this parameter, the base name of the file
             specified in the `file_name_to_send` parameter is used. For
             example, if `file_name_on_server` were not specified but
@@ -200,7 +200,7 @@ class FileTransferClient(Client):
             directory, with a name of `localfile.txt`.
         :param int max_segment_size: Maximum size (in bytes) for each file
             segment transferred through the DXL fabric.
-        :param function callback: Optional function called back upon with
+        :param function callback: Optional callable object called back upon with
             results for each transferred segment. The parameter passed into the
             callback should be a :class:`FileSendSegmentResult` instance.
         :return: The result of the send request.
@@ -235,7 +235,7 @@ class FileTransferClient(Client):
         :param str file_name_on_server: Name that the file should be stored as
             on the server. The name may contain subdirectories if it is desired
             to store the file in a subdirectory under the base storage
-            directory on the server, for example, `/localsubdir/stored.txt`.
+            directory on the server, for example, `localsubdir/stored.txt`.
         :param int segment_number: Number of the next file segment to send.
         :param str file_id: Id of the file.
         :param bytes segment: The contents of the next segment to be sent.
@@ -319,7 +319,7 @@ class FileTransferClient(Client):
         :param str file_name_on_server: Name that the file should be stored as
             on the server. The name may contain subdirectories if it is desired
             to store the file in a subdirectory under the base storage
-            directory on the server, for example, `/localsubdir/stored.txt`.
+            directory on the server, for example, `localsubdir/stored.txt`.
         :param int stream_size: Total size of the local stream (`None` if not
             known).
         :param int max_segment_size: Maximum size (in bytes) for each file

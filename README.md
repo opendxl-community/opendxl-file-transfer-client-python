@@ -14,7 +14,7 @@ to 1 MB. The File Transfer DXL Python client allows the contents of a file to be
 transferred in segments small enough to fit into a DXL message.
 
 This client can be used in conjunction with the
-[File Transfer DXL Service](https://github.com/opendxl-community/opendxl-file-transfer-client-python),
+[File Transfer DXL Service](https://github.com/opendxl-community/opendxl-file-transfer-service-python),
 an application which registers a service with the DXL fabric and a request
 callback which can store files sent to it.
 
@@ -25,7 +25,7 @@ for an overview of the File Transfer API DXL Python client library and usage
 examples.
 
 See the
-[File Transfer DXL Python client documentation](https://opendxl-community.github.io/opendxl-file-transfer-client-python/pydoc)
+[File Transfer DXL Python client documentation](https://opendxl-community.github.io/opendxl-file-transfer-client-python/pydoc/)
 for installation instructions, API documentation, and usage examples.
 
 ## Roadmap
