@@ -1,8 +1,8 @@
 Basic Send File Request Example
 ===============================
 
-The sample uses a client application wrapper to send a file via the DXL fabric
-to the request callback for storage. The progress and result of the file storage
+The sample uses a client application wrapper to send a file to a File Transfer
+service via the DXL fabric. The progress and result of the file storage
 operation are displayed to the console.
 
 Prerequisites
