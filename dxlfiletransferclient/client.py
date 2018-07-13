@@ -209,19 +209,13 @@ class FileTransferClient(Client):
         if not file_name_on_server:
             file_name_on_server = os.path.basename(file_name_to_send)
 
-        file_size = os.path.getsize(file_name_to_send)
-        total_segments = file_size // max_segment_size
-        if file_size % max_segment_size:
-            total_segments += 1
-
         with open(file_name_to_send, 'rb') as file_handle:
             return self.send_file_from_stream_request(
                 file_handle,
                 file_name_on_server,
-                os.path.getsize(file_name_to_send),
-                max_segment_size,
-                total_segments,
-                callback
+                stream_size=os.path.getsize(file_name_to_send),
+                max_segment_size=max_segment_size,
+                callback=callback
             )
 
     @staticmethod
@@ -339,6 +333,12 @@ class FileTransferClient(Client):
         bytes_read = 0
         continue_reading = True
         complete_sent = False
+
+        if total_segments is None and \
+                stream_size is not None and max_segment_size:
+            total_segments = stream_size // max_segment_size
+            if stream_size % max_segment_size:
+                total_segments += 1
 
         try:
             while continue_reading:
